@@ -13,14 +13,12 @@ exports.create = (text, callback) => {
     if (err) {
       return null;
     } else {
-      console.log('text is ', text);
-      // console.log(text);
       fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
-        if (err) throw err;
-        console.log('success')
+        if (err) {
+          throw err;
+        }
         callback(null, {id, text});
       });
-      console.log('text is', text)
     }
   });
 };
