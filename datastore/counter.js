@@ -38,9 +38,25 @@ const writeCounter = (count, callback) => {
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  counter = counter + 1;
-  return zeroPaddedNumber(counter);
+// input: callback function
+// output: a unique ID based on global variable counter
+// read file, if there is an error, return null
+// else, id is valid, set the global counter to id + 1
+// call writeCounter passing in that newly increased counter
+// in the callback of writeCounter, zero pad the counter
+// invoke the callback passing in counter as a padded str
+exports.getNextUniqueId = (callback) => {
+  readCounter((err, id) => {
+    if (err) {
+      return null;
+    } else {
+      counter = id + 1;
+      writeCounter(counter, (err, counterStr) => {
+        counter = zeroPaddedNumber(counter);
+        callback(null, counter);
+      });
+    }
+  });
 };
 
 
