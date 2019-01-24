@@ -6,11 +6,23 @@ const counter = require('./counter');
 var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
-
+// input: new to do item, and callback func
+// output: creates a .txt file with the to do item & an id
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, { id, text });
+  var id = counter.getNextUniqueId((err, id) => {
+    if (err) {
+      return null;
+    } else {
+      console.log('text is ', text);
+      // console.log(text);
+      fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
+        if (err) throw err;
+        console.log('success')
+        callback(null, {id, text});
+      });
+      console.log('text is', text)
+    }
+  });
 };
 
 exports.readAll = (callback) => {
