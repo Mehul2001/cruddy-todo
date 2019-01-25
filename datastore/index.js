@@ -9,13 +9,13 @@ var items = {};
 // input: new to do item, and callback func
 // output: creates a .txt file with the to do item & an id
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId((err, id) => {
+  counter.getNextUniqueId((err, id) => {
     if (err) {
-      return null;
+      callback(err);
     } else {
       fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
         if (err) {
-          throw err;
+          callback(err);
         }
         callback(null, {id, text});
       });
@@ -26,7 +26,7 @@ exports.create = (text, callback) => {
 exports.readAll = (callback) => {
   fs.readdir(exports.dataDir, (err, files) => {
     if (err) {
-      throw err;
+      callback(err);
     } else {
       _.each(files, (singleFile) => {
         var id = singleFile.slice(0, 5);
@@ -41,33 +41,40 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, text) => {
+    if (err) {
+      callback(err);
+    } else {
+      text = text.toString();
+      callback(null, { id, text });
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, data) => {
+    if (err) {
+      callback(err);
+    } else {
+      fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err) => {
+        if (err) {
+          callback(err);
+        } else {
+          callback(null, { id, text });
+        }
+      });
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+  fs.unlink(exports.dataDir + '/' + id + '.txt', (err) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback();
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
